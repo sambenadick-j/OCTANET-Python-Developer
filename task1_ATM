@@ -1,0 +1,116 @@
+class Account:
+    def __init__(self, user_id, pin, balance=0):
+        self.user_id = user_id  # User ID associated with the account
+        self.pin = pin  # PIN associated with the account
+        self.balance = balance  # Current balance of the account
+        self.transactions = []  # List to store transaction history
+
+    def deposit(self, amount):
+        # Increase the balance by the deposited amount
+        self.balance += amount
+        # Record the deposit transaction
+        self.transactions.append(f"Deposit: +${amount}")
+        # Print deposit confirmation and current balance
+        print(f"Money (${amount}) successfully deposited.")
+        print(f"Current Balance: ${self.balance}")
+
+    def withdraw(self, amount):
+        if amount > self.balance:
+            # If withdrawal amount exceeds balance, print insufficient funds
+            print("Insufficient funds")
+        else:
+            # Decrease the balance by the withdrawn amount
+            self.balance -= amount
+            # Record the withdrawal transaction
+            self.transactions.append(f"Withdrawal: -${amount}")
+            # Print withdrawal confirmation and current balance
+            print(f"Money (${amount}) successfully withdrawn.")
+            print(f"Current Balance: ${self.balance}")
+
+    def transfer(self, recipient, amount):
+        if amount > self.balance:
+            # If transfer amount exceeds balance, print insufficient funds
+            print("Insufficient funds")
+        else:
+            # Decrease the balance by the transferred amount
+            self.balance -= amount
+            # Increase recipient's balance by the transferred amount
+            recipient.balance += amount
+            # Record the transfer transaction for both sender and recipient
+            self.transactions.append(f"Transfer to {recipient.user_id}: -${amount}")
+            recipient.transactions.append(f"Transfer from {self.user_id}: +${amount}")
+            # Print transfer confirmation and current balance
+            print(f"Money (${amount}) successfully transferred to {recipient.user_id}.")
+            print(f"Current Balance: ${self.balance}")
+
+    def transaction_history(self):
+        if not self.transactions:
+            # If no transactions made, print no transactions message
+            print("No transactions made.")
+        else:
+            # Print each transaction in transaction history
+            for transaction in self.transactions:
+                print(transaction)
+            # Print remaining balance after transactions
+            print(f"Remaining Balance: ${self.balance}")
+
+class ATM:
+    def __init__(self, accounts):
+        self.accounts = accounts  # List of accounts associated with the ATM
+
+    def start(self):
+        user_id = input("Enter user ID: ")  # Prompt for user ID input
+        pin = input("Enter PIN: ")  # Prompt for PIN input
+
+        account = self.authenticate(user_id, pin)  # Authenticate user
+        if account:
+            self.interact(account)  # If authentication successful, proceed to interaction
+        else:
+            print("Authentication failed")  # If authentication fails, print authentication failure message
+
+    def authenticate(self, user_id, pin):
+        for account in self.accounts:
+            # Check if provided user ID and PIN match any account
+            if account.user_id == user_id and account.pin == pin:
+                return account  # If match found, return the account
+        return None  # If no match found, return None
+
+    def interact(self, account):
+        while True:
+            # Display menu options
+            print("\n1. Transaction History")
+            print("2. Withdraw")
+            print("3. Deposit")
+            print("4. Transfer")
+            print("5. Quit")
+
+            choice = input("Enter your choice: ")  # Prompt for user choice
+
+            if choice == "1":
+                account.transaction_history()  # Display transaction history
+            elif choice == "2":
+                amount = float(input("Enter amount to withdraw: "))  # Prompt for withdrawal amount
+                account.withdraw(amount)  # Execute withdrawal
+            elif choice == "3":
+                amount = float(input("Enter amount to deposit: "))  # Prompt for deposit amount
+                account.deposit(amount)  # Execute deposit
+            elif choice == "4":
+                recipient_id = input("Enter recipient's user ID: ")  # Prompt for recipient's user ID
+                recipient = self.authenticate(recipient_id, "")  # Authenticate recipient
+                if recipient:
+                    amount = float(input("Enter amount to transfer: "))  # Prompt for transfer amount
+                    account.transfer(recipient, amount)  # Execute transfer
+                else:
+                    print("Recipient not found")  # If recipient not found, print recipient not found message
+            elif choice == "5":
+                print("Thank you for using our ATM!")  # Quit the ATM interaction
+                break
+            else:
+                print("Invalid choice. Please enter a number between 1 and 5.")  # Handle invalid input
+
+print('-------------------💸ATM💸-------------------------')
+# Sample usage
+account1 = Account("user1", "1234", 1000)  # Create account 1
+account2 = Account("user2", "5678", 500)  # Create account 2
+atm = ATM([account1, account2])  # Initialize ATM with accounts
+atm.start()  # Start ATM interaction
